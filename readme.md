@@ -78,7 +78,7 @@ post /teachers/login
   "type": "signin_code",
   "body": {
      "key": "ddbbb1e9bc1f78b590c4200f67718c7b06f0c620266ee4d272fcba6cbd4506a4",
-     "count": 25 
+     "count": 25,
   }
 }
 ```
@@ -95,3 +95,16 @@ post /teachers/login
 ```
 
 服务端发送过来的消息
+
+```json
+{
+  "type": "danmuku",
+  "body": {
+     "uid": "学号",
+     "name": "姓名",
+     "content": "内容"
+  }
+}
+```
+
+学生发送的弹幕
