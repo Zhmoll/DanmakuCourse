@@ -21,14 +21,14 @@ post /teachers/login
 
 ```json
 {
-  "code": "2000,
+  "code": "2000",
   "message": "登陆成功！",
   "body": {
     "teacherid": "这里是教师的数据库id",
     "rooms": [{
       "id": "弹幕房间id",
   	  "title": "弹幕房间名"
-    }]
+    }],
     "secret": "操作密钥"
   }
 }
