@@ -21,7 +21,7 @@ post /teachers/login
 
 ```json
 {
-  "code": "2000",
+  "code": 2000,
   "message": "登陆成功！",
   "body": {
     "teacherid": "这里是教师的数据库id",
@@ -39,3 +39,48 @@ post /teachers/login
 请求 ws://domain/danmuku?teacherid=123123&secret=123123&roomid=123123
 
 其中上面的三个参数均由前一个接口登录后获得。
+
+# ws连接通信协议
+
+格式
+
+```json
+{
+  "type": "消息类型",
+  "body": {}
+}
+```
+
+客户端需发送的消息
+
+发起签到
+
+```json
+{
+  "type": "signin",
+  "body": {}
+}
+```
+
+结束签到
+
+```json
+{
+  "type": "signin_end",
+  "body": {}
+}
+```
+
+客户端需处理的消息
+
+```json
+{
+  "type": "signin_code",
+  "body": {
+     "key": "ddbbb1e9bc1f78b590c4200f67718c7b06f0c620266ee4d272fcba6cbd4506a4",
+     "count": 25 
+  }
+}
+```
+
+需要将`key`转化为二维码显示，而`count`则为成功签到人数。

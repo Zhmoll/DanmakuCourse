@@ -2,113 +2,33 @@ const wechat = require('wechat');
 const express = require('express');
 const config = require('config-lite')(__dirname).wechat;
 const Student = require('../model/students');
+const Signin = require('../model/signin');
 const wsDanmuku = require('../lib/websocket');
 
 const middleware = wechat(config, wechat.text(function (message, req, res, next) {
   // message为文本内容
-  // { ToUserName: 'gh_d3e07d51b513',
-  // FromUserName: 'oPKu7jgOibOA-De4u8J2RuNKpZRw',
-  // CreateTime: '1359125035',
-  // MsgType: 'text',
-  // Content: 'http',
-  // MsgId: '5837397576500011341' }
 }).image(function (message, req, res, next) {
   // message为图片内容
-  // { ToUserName: 'gh_d3e07d51b513',
-  // FromUserName: 'oPKu7jgOibOA-De4u8J2RuNKpZRw',
-  // CreateTime: '1359124971',
-  // MsgType: 'image',
-  // PicUrl: 'http://mmsns.qpic.cn/mmsns/bfc815ygvIWcaaZlEXJV7NzhmA3Y2fc4eBOxLjpPI60Q1Q6ibYicwg/0',
-  // MediaId: 'media_id',
-  // MsgId: '5837397301622104395' }
 }).voice(function (message, req, res, next) {
   // message为音频内容
-  // { ToUserName: 'gh_d3e07d51b513',
-  // FromUserName: 'oPKu7jgOibOA-De4u8J2RuNKpZRw',
-  // CreateTime: '1359125022',
-  // MsgType: 'voice',
-  // MediaId: 'OMYnpghh8fRfzHL8obuboDN9rmLig4s0xdpoNT6a5BoFZWufbE6srbCKc_bxduzS',
-  // Format: 'amr',
-  // MsgId: '5837397520665436492' }
 }).video(function (message, req, res, next) {
   // message为视频内容
-  // { ToUserName: 'gh_d3e07d51b513',
-  // FromUserName: 'oPKu7jgOibOA-De4u8J2RuNKpZRw',
-  // CreateTime: '1359125022',
-  // MsgType: 'video',
-  // MediaId: 'OMYnpghh8fRfzHL8obuboDN9rmLig4s0xdpoNT6a5BoFZWufbE6srbCKc_bxduzS',
-  // ThumbMediaId: 'media_id',
-  // MsgId: '5837397520665436492' }
 }).shortvideo(function (message, req, res, next) {
   // message为短视频内容
-  // { ToUserName: 'gh_d3e07d51b513',
-  // FromUserName: 'oPKu7jgOibOA-De4u8J2RuNKpZRw',
-  // CreateTime: '1359125022',
-  // MsgType: 'shortvideo',
-  // MediaId: 'OMYnpghh8fRfzHL8obuboDN9rmLig4s0xdpoNT6a5BoFZWufbE6srbCKc_bxduzS',
-  // ThumbMediaId: 'media_id',
-  // MsgId: '5837397520665436492' }
 }).location(function (message, req, res, next) {
   // message为位置内容
-  // { ToUserName: 'gh_d3e07d51b513',
-  // FromUserName: 'oPKu7jgOibOA-De4u8J2RuNKpZRw',
-  // CreateTime: '1359125311',
-  // MsgType: 'location',
-  // Location_X: '30.283950',
-  // Location_Y: '120.063139',
-  // Scale: '15',
-  // Label: {},
-  // MsgId: '5837398761910985062' }
 }).link(function (message, req, res, next) {
   // message为链接内容
-  // { ToUserName: 'gh_d3e07d51b513',
-  // FromUserName: 'oPKu7jgOibOA-De4u8J2RuNKpZRw',
-  // CreateTime: '1359125022',
-  // MsgType: 'link',
-  // Title: '公众平台官网链接',
-  // Description: '公众平台官网链接',
-  // Url: 'http://1024.com/',
-  // MsgId: '5837397520665436492' }
 }).event(function (message, req, res, next) {
   // message为事件内容
-  // { ToUserName: 'gh_d3e07d51b513',
-  // FromUserName: 'oPKu7jgOibOA-De4u8J2RuNKpZRw',
-  // CreateTime: '1359125022',
-  // MsgType: 'event',
-  // Event: 'LOCATION',
-  // Latitude: '23.137466',
-  // Longitude: '113.352425',
-  // Precision: '119.385040',
-  // MsgId: '5837397520665436492' }
-}).device_text(function (message, req, res, next) {
-  // message为设备文本消息内容
-  // { ToUserName: 'gh_d3e07d51b513',
-  // FromUserName: 'oPKu7jgOibOA-De4u8J2RuNKpZRw',
-  // CreateTime: '1359125022',
-  // MsgType: 'device_text',
-  // DeviceType: 'gh_d3e07d51b513'
-  // DeviceID: 'dev1234abcd',
-  // Content: 'd2hvc3lvdXJkYWRkeQ==',
-  // SessionID: '9394',
-  // MsgId: '5837397520665436492',
-  // OpenID: 'oPKu7jgOibOA-De4u8J2RuNKpZRw' }
-}).device_event(function (message, req, res, next) {
   switch (message.Event) {
     case 'subscribe': subscribe_helper(message, req, res); break;
+    case 'scancode_waitmsg': scancode_helper(message, req, res); break;
   }
+}).device_text(function (message, req, res, next) {
+  // message为设备文本消息内容
+}).device_event(function (message, req, res, next) {
   // message为设备事件内容
-  // { ToUserName: 'gh_d3e07d51b513',
-  // FromUserName: 'oPKu7jgOibOA-De4u8J2RuNKpZRw',
-  // CreateTime: '1359125022',
-  // MsgType: 'device_event',
-  // Event: 'bind'
-  // DeviceType: 'gh_d3e07d51b513'
-  // DeviceID: 'dev1234abcd',
-  // OpType : 0, //Event为subscribe_status/unsubscribe_status时存在
-  // Content: 'd2hvc3lvdXJkYWRkeQ==', //Event不为subscribe_status/unsubscribe_status时存在
-  // SessionID: '9394',
-  // MsgId: '5837397520665436492',
-  // OpenID: 'oPKu7jgOibOA-De4u8J2RuNKpZRw' }
 }));
 
 function subscribe_helper(message, req, res) {
@@ -138,9 +58,43 @@ function bind_helper(message, req, res) {
       return res.reply('该学生不存在');
     if (user.name != name)
       return res.reply('学号与姓名不匹配');
+
+    await Student.update({ openid }, { $unset: 'openid' });
     user.openid = openid;
     await user.save();
+    req.wxsession.uid = user.uid;
+    req.wxsession.userid = user.id;
     res.reply(`绑定成功，${name}，欢迎加入弹幕课堂！`);
+  })();
+}
+
+function scancode_helper(message, req, res) {
+  switch (message.EventKey) {
+    case 'signin': signin_helper(message, req, res); break;
+  }
+}
+
+function signin_helper(message, req, res) {
+  const openid = message.FromUserName;
+  const uid = req.wxsession.uid;
+  const userid = req.wxsession.userid;
+  const key = message.ScanCodeInfo;
+
+  (async () => {
+    const signin = await Signin.findOne({ key }).populate('room');
+    if(!signin){
+      res.reply('签到失败（二维码已过期），请重试！');
+      return;
+    }
+    for (let i = 0; i < signin.containers.length; i++) {
+      if (signin.containers[i] == uid) {
+        res.reply(`本次课(${signin.room.title})你已经签过到啦！`);
+        return;
+      }
+    }
+    signin.containers.push(uid);
+    await signin.save();
+    res.reply(`本次签到(${signin.room.title})成功啦！`)
   })();
 }
 

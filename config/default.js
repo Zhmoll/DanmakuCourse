@@ -9,5 +9,12 @@ module.exports = {
     },
     mongodb: {
         url: 'mongodb://localhost/DanmukuCourse'
+    },
+    session: {
+        secret: 'zhmolldanmuku!!!',
+        resave: false,
+        saveUninitialized: true,
+        cookie: { maxAge: 3 * 24 * 3600 },
+        database: 'mongodb://localhost/DanmukuCourse'
     }
 }
