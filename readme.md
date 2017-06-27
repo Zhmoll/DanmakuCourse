@@ -84,3 +84,14 @@ post /teachers/login
 ```
 
 需要将`key`转化为二维码显示，而`count`则为成功签到人数。
+
+```json
+{
+  "type": "info",
+  "body": {
+     "message": "来自服务器的信息"
+  }
+}
+```
+
+服务端发送过来的消息
