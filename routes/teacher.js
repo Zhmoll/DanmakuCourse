@@ -4,6 +4,10 @@ const Teacher = require('../model/teachers');
 const Room = require('../model/rooms');
 const crypto = require('crypto');
 
+router.get('/', (req, res, next) => {
+  res.send('hello!');
+});
+
 // 教师登录，返回密钥、弹幕室名称和对应id
 router.post('/login', (req, res, next) => {
   const { sid, password } = req.body;
