@@ -25,7 +25,7 @@ app.use(session({
 
 require('./routes')(app);
 require('./routes/wechat')(app);
-require('./lib/websocket')(app);
+require('./lib/websocket');
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
