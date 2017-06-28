@@ -9,28 +9,34 @@ const middleware = wechat(config, wechat.text(function (message, req, res, next)
   // message为文本内容
   console.log(message);
   (async () => {
-    if (!req.wxsession.uid) {
-      const student = await Student.findOne({ openid: message.FromUserName });
+    try {
+      if (!req.wxsession.uid) {
+        const student = await Student.findOne({ openid: message.FromUserName });
+      }
+
+      if (!student) {
+        res.reply(`你还未绑定账号！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
+        return;
+      }
+
+      const uid = req.wxsession.uid || student.uid;
+      const name = req.wxsession.name || student.name;
+      const content = message.Content;
+      const roomid = req.wxsession.roomid;
+
+      if (roomid && wsDanmuku[roomid]) {
+        wsDanmuku[roomid].ws.send({ type: 'danmuku', body: { uid, name, content } });
+        res.reply('发送成功！');
+      }
+      else {
+        delete req.wxsession.roomid;
+        res.reply('目前暂未加入弹幕房间');
+      }
+    }
+    catch (e) {
+      console.error(e);
     }
 
-    if (!student) {
-      res.reply(`你还未绑定账号！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
-      return;
-    }
-
-    const uid = req.wxsession.uid || student.uid;
-    const name = req.wxsession.name || student.name;
-    const content = message.Content;
-    const roomid = req.wxsession.roomid;
-
-    if (roomid && wsDanmuku[roomid]) {
-      wsDanmuku[roomid].ws.send({ type: 'danmuku', body: { uid, name, content } });
-      res.reply('发送成功！');
-    }
-    else {
-      delete req.wxsession.roomid;
-      res.reply('目前暂未加入弹幕房间');
-    }
   })();
 }).image(function (message, req, res, next) {
   // message为图片内容
