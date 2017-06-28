@@ -98,7 +98,7 @@ function checkLogin(req, res, next) {
 }
 
 function genSecert() {
-  return crypto.createHash('sha256').update(Date.now() + 'zhmoll').digest('hex');;
+  return crypto.createHash('sha256').update(Date.now() + 'zhmoll').digest('hex');
 }
 
 module.exports = router;

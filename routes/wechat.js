@@ -10,23 +10,30 @@ const middleware = wechat(config, wechat.text(function (message, req, res, next)
   console.log(message);
   (async () => {
     try {
+      switch (message.Content.split('+')[0]) {
+        case '绑定': return bind_helper(message, req, res);
+        default: break;
+      }
+
       let student;
       if (!req.wxsession.uid) {
         student = await Student.findOne({ openid: message.FromUserName });
+        if (!student) {
+          res.reply(`你还未绑定账号！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
+          return;
+        }
+        req.wxsession.userid = student.id;
+        req.wxsession.uid = student.uid;
+        req.wxsession.name = student.name;
       }
 
-      if (!student) {
-        res.reply(`你还未绑定账号！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
-        return;
-      }
-
-      const uid = req.wxsession.uid || student.uid;
-      const name = req.wxsession.name || student.name;
+      const uid = req.wxsession.uid;
+      const name = req.wxsession.name;
       const content = message.Content;
-      const roomid = req.wxsession.roomid;
+      const roomid = '595362d61df92707286c9fb2';// req.wxsession.roomid;
 
       if (roomid && wsDanmuku[roomid]) {
-        wsDanmuku[roomid].ws.send({ type: 'danmuku', body: { uid, name, content } });
+        wsDanmuku[roomid].ws.send(JSON.stringify({ type: 'danmuku', body: { uid, name, content } }));
         res.reply('发送成功！');
       }
       else {
@@ -53,7 +60,6 @@ const middleware = wechat(config, wechat.text(function (message, req, res, next)
   // message为链接内容
 }).event(function (message, req, res, next) {
   // message为事件内容
-  console.log(message);
   switch (message.Event) {
     case 'subscribe': subscribe_helper(message, req, res); break;
     case 'scancode_waitmsg': scancode_helper(message, req, res); break;
@@ -80,25 +86,28 @@ function subscribe_helper(message, req, res) {
 function bind_helper(message, req, res) {
   const openid = message.FromUserName;
   const [identity, uid, name] = message.Content.split('+');
-  if (identity != '绑定')
-    return;
   if (!uid || !name)
     return res.reply(`绑定格式错误！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
 
   (async () => {
-    const user = await Student.findOne({ uid });
-    if (!user)
-      return res.reply('该学生不存在');
-    if (user.name != name)
-      return res.reply('学号与姓名不匹配');
+    try {
+      const user = await Student.findOne({ uid });
+      if (!user)
+        return res.reply('该学生不存在，请确认学生信息并重新尝试');
+      if (user.name != name)
+        return res.reply('学号与姓名不匹配，请确认学生信息并重新尝试');
 
-    await Student.update({ openid }, { $unset: 'openid' });
-    user.openid = openid;
-    await user.save();
-    req.wxsession.uid = user.uid;
-    req.wxsession.userid = user.id;
-    req.wxsession.name = user.name;
-    res.reply(`绑定成功，${name}，欢迎加入弹幕课堂！`);
+      await Student.update({ openid }, { $unset: ['openid'] });
+      user.openid = openid;
+      await user.save();
+      req.wxsession.uid = user.uid;
+      req.wxsession.userid = user.id;
+      req.wxsession.name = user.name;
+      res.reply(`绑定成功，${name}，欢迎加入弹幕课堂！`);
+    }
+    catch (e) {
+      console.error(e);
+    }
   })();
 }
 
@@ -139,7 +148,6 @@ function signin_helper(message, req, res) {
 
 module.exports = (app) => {
   app.use('/wechat', (req, res, next) => {
-    console.log(req.body);
     next();
   }, middleware);
 }

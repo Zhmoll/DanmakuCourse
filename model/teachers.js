@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const teacherSchema = new Schema({
   sid: { type: String, index: true },
   password: { type: String },
-  secert: { type: String },
+  secret: { type: String },
   rooms: [{ type: Schema.Types.ObjectId, ref: 'Room' }]
 });
 

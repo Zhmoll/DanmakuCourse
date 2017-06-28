@@ -7,7 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('danmukucourse:server');
 var http = require('http');
-
+require('../lib/mongoose');
 /**
  * Get port from environment and store in Express.
  */
