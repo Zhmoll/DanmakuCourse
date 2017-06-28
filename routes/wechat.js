@@ -8,12 +8,11 @@ const wsDanmuku = require('../lib/websocket');
 const middleware = wechat(config, wechat.text(function (message, req, res, next) {
   // message为文本内容
   console.log(message);
-  res.reply('hehe');
-  return ;
   (async () => {
     try {
+      let student;
       if (!req.wxsession.uid) {
-        const student = await Student.findOne({ openid: message.FromUserName });
+        student = await Student.findOne({ openid: message.FromUserName });
       }
 
       if (!student) {
@@ -54,6 +53,7 @@ const middleware = wechat(config, wechat.text(function (message, req, res, next)
   // message为链接内容
 }).event(function (message, req, res, next) {
   // message为事件内容
+  console.log(message);
   switch (message.Event) {
     case 'subscribe': subscribe_helper(message, req, res); break;
     case 'scancode_waitmsg': scancode_helper(message, req, res); break;
