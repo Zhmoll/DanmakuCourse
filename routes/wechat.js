@@ -8,6 +8,8 @@ const wsDanmuku = require('../lib/websocket');
 const middleware = wechat(config, wechat.text(function (message, req, res, next) {
   // message为文本内容
   console.log(message);
+  res.reply('hehe');
+  return ;
   (async () => {
     try {
       if (!req.wxsession.uid) {
