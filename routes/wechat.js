@@ -7,6 +7,7 @@ const wsDanmuku = require('../lib/websocket');
 
 const middleware = wechat(config, wechat.text(function (message, req, res, next) {
   // message为文本内容
+  console.log(message);
   (async () => {
     if (!req.wxsession.uid) {
       const student = await Student.findOne({ openid: message.FromUserName });
