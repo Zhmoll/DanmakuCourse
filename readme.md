@@ -87,6 +87,8 @@ put /teachers/rooms?roomid=123123
 
 其中上面的三个参数均由前一个接口登录后获得。
 
+测试用 ws://45.76.156.38:8080/?teacherid=5953636f1df92707286c9fb5&secret=123&roomid=595362d61df92707286c9fb2
+
 # ws连接通信协议
 
 格式
