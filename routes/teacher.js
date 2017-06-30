@@ -3,6 +3,7 @@ const router = express.Router();
 const Teacher = require('../model/teachers');
 const Room = require('../model/rooms');
 const Signin = require('../model/signin');
+const Danmaku = require('../model/danmakus');
 const crypto = require('crypto');
 const moment = require('moment');
 const xlsx = require('node-xlsx');
@@ -201,6 +202,18 @@ router.get('/rooms/signins/download', (req, res, next) => {
   res.setHeader('Content-Type', 'application/octet-stream');
   res.setHeader('Content-Disposition', 'attachment;filename=' + querystring.escape(filename));
   res.end(buffer);
+});
+
+router.use('/rooms/danmakus', checkLogin, checkPossessRoom, (req, res, next) => {
+  (async () => {
+    const roomid = req.room.id;
+    const danmakus = await Danmaku.find({ room: roomid }).populate({ path: 'student', select: 'uid name createdAt' });
+    res.json({
+      code: 2007,
+      message: '获取弹幕房间所有弹幕成功',
+      body: { danmaku: danmakus }
+    });
+  })().catch(e => console.error(e));
 });
 
 function checkLogin(req, res, next) {

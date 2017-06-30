@@ -4,9 +4,9 @@ const wechat = require('wechat');
 const config = require('config-lite')(__dirname).wechat;
 const Student = require('../model/students');
 const Signin = require('../model/signin');
-const Danmuku = require('../model/danmukus');
+const Danmaku = require('../model/danmakus');
 const Room = require('../model/rooms');
-const wsDanmuku = require('../lib/websocket');
+const wsDanmaku = require('../lib/websocket');
 
 const mw = wechat(config)
   .text((message, req, res, next) => {
@@ -14,7 +14,7 @@ const mw = wechat(config)
       case '绑定':
         return bind_helper(message, req, res);
       default:
-        return danmuku_helper(message, req, res);
+        return danmaku_helper(message, req, res);
     }
   })
   .event((message, req, res, next) => {
@@ -62,7 +62,7 @@ function bind_helper(message, req, res) {
 }
 
 // 发送弹幕
-function danmuku_helper(message, req, res) {
+function danmaku_helper(message, req, res) {
   (async () => {
     // 确保登录 - start
     let student;
@@ -83,13 +83,13 @@ function danmuku_helper(message, req, res) {
     const content = message.Content;
     const roomid = req.wxsession.roomid;
 
-    if (roomid && wsDanmuku[roomid]) {
-      if (wsDanmuku[roomid].containers && wsDanmuku[roomid].containers.indexOf(uid) == -1) {
+    if (roomid && wsDanmaku[roomid]) {
+      if (wsDanmaku[roomid].containers && wsDanmaku[roomid].containers.indexOf(uid) == -1) {
         res.reply('发送失败，请确认是否为该课堂成员！');
         return;
       }
-      await Danmuku.create({ student: req.wxsession.userid, content: content, room: roomid });
-      wsDanmuku[roomid].ws.send(JSON.stringify({ type: 'danmuku', body: { uid, name, content } }), console.error);
+      await Danmaku.create({ student: req.wxsession.userid, content: content, room: roomid });
+      wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content } }), console.error);
       res.reply('发送成功！');
     }
     else {

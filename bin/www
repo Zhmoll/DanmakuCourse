@@ -5,7 +5,7 @@
  */
 
 var app = require('../app');
-var debug = require('debug')('danmukucourse:server');
+var debug = require('debug')('danmakucourse:server');
 var http = require('http');
 require('../lib/mongoose');
 /**

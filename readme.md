@@ -1,4 +1,4 @@
-# DanmukuCourse Serverside 说明
+# DanmakuCourse Serverside 说明
 
 ----------
 
@@ -15,6 +15,7 @@
 | 2004 | 注册成功！           |                        |
 | 2005 | 删除成功！           | 弹幕房间删除成功               |
 | 2006 | 获取该弹幕房所有签到记录成功！ |                        |
+| 2007 | 获取弹幕房间所有弹幕成功    |                        |
 | 4000 | 认证信息错误          | 给予了错误的teacherid和secret |
 | 4001 | 找不到该教师          | 登录使用的sid没有被注册过         |
 | 4002 | 教师工号密码不匹配       |                        |
@@ -227,11 +228,11 @@
 
 ## 1、建立ws连接
 
-请求 ws://domain/danmuku?teacherid=123123&secret=123123&roomid=123123
+请求 ws://domain/danmaku?teacherid=123123&secret=123123&roomid=123123
 
 其中上面的三个参数均由前一个接口登录后获得。
 
-测试用 `ws://45.76.156.38:8080/danmuku?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
+测试用 `ws://45.76.156.38:8080/danmaku?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
 
 ## 2、ws连接通信协议统一格式
 
@@ -293,7 +294,7 @@
 
 ```json
 {
-  "type": "danmuku",
+  "type": "danmaku",
   "body": {
      "uid": "学号",
      "name": "姓名",
