@@ -30,7 +30,7 @@ const middleware = wechat(config, wechat.text(function (message, req, res, next)
       const uid = req.wxsession.uid;
       const name = req.wxsession.name;
       const content = message.Content;
-      const roomid = '595362d61df92707286c9fb2';// req.wxsession.roomid;
+      const roomid = req.wxsession.roomid; //'595362d61df92707286c9fb2';// 
 
       if (roomid && wsDanmuku[roomid]) {
         wsDanmuku[roomid].ws.send(JSON.stringify({ type: 'danmuku', body: { uid, name, content } }));

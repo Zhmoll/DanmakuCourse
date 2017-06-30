@@ -8,6 +8,19 @@ router.get('/', (req, res, next) => {
   res.send('hello!');
 });
 
+// 教师注册
+router.post('/reg', (req, res, next) => {
+  const { sid, password } = req.body;
+  const processedPassword = processPassword(password);
+  Teacher.create({ sid, password: processedPassword }, (err, teacher) => {
+    if (err) return next(err);
+    res.json({
+      code: 2004,
+      message: '注册成功'
+    });
+  });
+});
+
 // 教师登录，返回密钥、弹幕室名称和对应id
 router.post('/login', (req, res, next) => {
   const { sid, password } = req.body;
@@ -42,8 +55,28 @@ router.post('/login', (req, res, next) => {
   })();
 });
 
+// 教师获取所有房间
+router.get('/rooms', checkLogin, (req, res, next) => {
+  const { teacherid } = req.query;
+  Room.find({ teacher, deleted: false }, (err, rooms) => {
+    if (err) return next(err);
+    const body = [];
+    rooms.forEach((room) => {
+      body.push({ title: room.title, containers: room.containers });
+    });
+    res.json({
+      code: 2003,
+      message: '获取教师所拥有房间成功',
+      body: {
+        rooms: body
+      }
+    });
+  });
+});
+
 // 创建弹幕室
 router.post('/rooms', checkLogin, (req, res, next) => {
+  const teacherid = req.query.teacherid;
   let { containers, title } = req.body;
   if (!title)
     return res.json({
@@ -51,7 +84,7 @@ router.post('/rooms', checkLogin, (req, res, next) => {
       message: '弹幕房间信息不完整'
     });
   containers = containers || [];
-  Room.create({ title, containers, teacher: req.teacherid }, (err, room) => {
+  Room.create({ title, containers, teacher: teacherid }, (err, room) => {
     if (err) return next(err);
     res.json({
       code: 2001,
@@ -66,7 +99,7 @@ router.post('/rooms', checkLogin, (req, res, next) => {
 });
 
 // 修改弹幕室
-router.put('/rooms', checkLogin, (req, res, next) => {
+router.put('/rooms', checkLogin, checkPossessRoom, (req, res, next) => {
   const roomid = req.query.roomid;
   const { containers, title } = req.body;
   Room.findByIdAndUpdate(roomid, { title, containers }, (err, room) => {
@@ -84,7 +117,13 @@ router.put('/rooms', checkLogin, (req, res, next) => {
 });
 
 function checkLogin(req, res, next) {
-  const { teacherid, secret } = req.body;
+  const { teacherid, secret } = req.query;
+  if (!teacherid || !secret) {
+    return res.json({
+      code: 4001,
+      message: '需要授权访问'
+    });
+  }
   Teacher.findOne({ id: teacherid, secret }, (err, teacher) => {
     if (err) return next(err);
     if (!teacher)
@@ -92,13 +131,41 @@ function checkLogin(req, res, next) {
         code: 4000,
         message: '认证信息错误'
       });
-    req.teacherid = teacher.id;
+    req.teacher = teacher;
     next();
   });
 }
 
+function checkPossessRoom(req, res, next) {
+  const { teacherid, roomid } = req.query;
+  const teacher = req.teacher;
+  if (!roomid) {
+    return res.json({
+      code: 4004,
+      message: "缺少房间id信息"
+    });
+  }
+  let isFound = false;
+  for (let room in teacher.rooms) {
+    if (room == roomid)
+      isFound = true;
+    break;
+  }
+  if (!isFound) {
+    return res.json({
+      code: 4005,
+      message: "没有对该房间访问的权限"
+    });
+  }
+  next();
+}
+
 function genSecert() {
   return crypto.createHash('sha256').update(Date.now() + 'zhmoll').digest('hex');
+}
+
+function processPassword(password) {
+  return password;
 }
 
 module.exports = router;

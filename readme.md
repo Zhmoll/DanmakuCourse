@@ -2,9 +2,11 @@ DanmukuCourse Serverside 说明
 
 ----------
 
-# 教师登录
+# 一、Http协议
 
-post /teachers/login
+## 1、教师登录
+
+`post` `/teachers/login`
 
 发送
 
@@ -15,7 +17,7 @@ post /teachers/login
 }
 ```
 
-注，密码在客户端发送之前使用`sha-256`算法进行摘要处理。
+注，密码在客户端发送之前使用`sha-256`算法进行摘要处理。测试用的密码的明文是`zhmoll`。
 
 返回
 
@@ -35,11 +37,13 @@ post /teachers/login
 }
 ```
 
-# 创建弹幕房间
+## 2、创建弹幕房间
+
+`post` `/teachers/rooms?teacherid=123123&secret=123123`
+
+路由中，教师id和密钥需要正确填写
 
 发送
-
-post /teachers/rooms
 
 ```json
 {
@@ -52,17 +56,23 @@ post /teachers/rooms
 
 ```json
 {
-  "title": "2018年春季数据结构课堂",
-  "roomid": "123123123",
-  "containers": ["14051534","14051533","14051532"]
+  "code": 2001,
+  "message": "创建成功！",
+  "body": {
+    "title": "2018年春季数据结构课堂",
+    "roomid": "123123123",
+    "containers": ["14051534","14051533","14051532"]
+  }
 }
 ```
 
-# 修改弹幕房间
+## 3、修改弹幕房间
+
+`put` `/teachers/rooms?teacherid=123123&secret=123123&roomid=123123`
+
+路由中，roomid填写选择要修改的房间的id，教师id和密钥需要正确填写
 
 发送
-
-put /teachers/rooms?roomid=123123
 
 ```json
 {
@@ -75,13 +85,58 @@ put /teachers/rooms?roomid=123123
 
 ```json
 {
-  "title": "2018年春季数据结构课堂",
-  "roomid": "123123123",
-  "containers": ["14051534","14051533","14051532"]
+  "code": 2002,
+  "message": "修改成功！",
+  "body": {
+    "title": "2018年春季数据结构课堂",
+    "roomid": "123123123",
+    "containers": ["14051534","14051533","14051532"]
+  }
 }
 ```
 
-# 建立ws连接
+## 4、获取所有弹幕房间
+
+`get` `/teachers/rooms?teacherid=123123&secret=123123`
+
+返回
+
+```json
+{
+  "code": 2003,
+  "message": "获取教师所拥有房间成功",
+  "body": {
+    "rooms": [{"title":"2018年春季数据结构课堂","containers":["14051534","14051533","14051532"]},
+             {"title":"2019年春季数据结构课堂","containers":["14051534","14051533","14051532"]}]
+  }
+}
+```
+
+## 5、教师注册
+
+`post` `/teachers/reg`
+
+发送
+
+```json
+{
+  "sid": "工号",
+  "password": "94165b0be8a06b797a6da9274afb827fc7b3eee83d45f10f17c81309992090ea"
+}
+```
+
+返回
+
+```json
+{
+  "code": 2004,
+  "message": "注册成功"
+}
+```
+
+# 二、WebSocket协议
+
+## 1、建立ws连接
 
 请求 ws://domain/danmuku?teacherid=123123&secret=123123&roomid=123123
 
@@ -89,9 +144,7 @@ put /teachers/rooms?roomid=123123
 
 测试用 ws://45.76.156.38:8080/?teacherid=5953636f1df92707286c9fb5&secret=123&roomid=595362d61df92707286c9fb2
 
-# ws连接通信协议
-
-格式
+## 2、ws连接通信协议统一格式
 
 ```json
 {
@@ -100,9 +153,9 @@ put /teachers/rooms?roomid=123123
 }
 ```
 
-客户端需发送的消息
+## 3、签到
 
-发起签到
+客户端发送，发起签到命令
 
 ```json
 {
@@ -111,7 +164,7 @@ put /teachers/rooms?roomid=123123
 }
 ```
 
-结束签到
+客户端发送，结束签到命令
 
 ```json
 {
@@ -120,7 +173,7 @@ put /teachers/rooms?roomid=123123
 }
 ```
 
-客户端需处理的消息
+服务器发送，签到心跳包，需由客户端处理
 
 ```json
 {
@@ -134,6 +187,8 @@ put /teachers/rooms?roomid=123123
 
 需要将`key`转化为二维码显示，而`count`则为成功签到人数。
 
+## 4、服务端通知消息
+
 ```json
 {
   "type": "info",
@@ -143,7 +198,9 @@ put /teachers/rooms?roomid=123123
 }
 ```
 
-服务端发送过来的消息
+## 5、弹幕消息
+
+服务端转发送的学生弹幕信息
 
 ```json
 {
@@ -155,5 +212,3 @@ put /teachers/rooms?roomid=123123
   }
 }
 ```
-
-学生发送的弹幕
