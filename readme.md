@@ -224,6 +224,69 @@
 }
 ```
 
+## 9、 获取房间弹幕历史
+
+`get` `/teachers/rooms/danmakus?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
+
+返回
+
+```json
+{
+    "code": 2007,
+    "message": "获取弹幕房间所有弹幕成功",
+    "body": {
+        "danmaku": [
+            {
+                "_id": "5955f01284a72838b001290d",
+                "student": {
+                    "_id": "59535d971df92707286c9f9b",
+                    "uid": "14051534",
+                    "name": "张效伟"
+                },
+                "content": "3453453453",
+                "createdAt": "2017-06-30T06:30:42.019Z"
+            },
+            {
+                "_id": "5955f2064adc88406c3ebbfd",
+                "student": {
+                    "_id": "59535d971df92707286c9f9b",
+                    "uid": "14051534",
+                    "name": "张效伟"
+                },
+                "content": "测试弹幕",
+                "createdAt": "2017-06-30T06:39:02.492Z"
+            },
+            {
+                "_id": "5955f20a4adc88406c3ebbfe",
+                "student": {
+                    "_id": "59535d971df92707286c9f9b",
+                    "uid": "14051534",
+                    "name": "张效伟"
+                },
+                "content": "啦啦啦",
+                "createdAt": "2017-06-30T06:39:06.291Z"
+            },
+            {
+                "_id": "5955f2ac19800d11e42af06f",
+                "student": {
+                    "_id": "59535d971df92707286c9f9b",
+                    "uid": "14051534",
+                    "name": "张效伟"
+                },
+                "content": "试试看",
+                "createdAt": "2017-06-30T06:41:48.910Z"
+            }
+        ]
+    }
+}
+```
+
+## 10、下载房间弹幕历史
+
+`get` `/teachers/rooms/danmakus/download?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
+
+返回浏览器下载文件
+
 # 二、WebSocket协议
 
 ## 1、建立ws连接

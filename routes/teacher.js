@@ -205,15 +205,45 @@ router.get('/rooms/signins/download', (req, res, next) => {
 });
 
 router.use('/rooms/danmakus', checkLogin, checkPossessRoom, (req, res, next) => {
-  (async () => {
-    const roomid = req.room.id;
-    const danmakus = await Danmaku.find({ room: roomid }).populate({ path: 'student', select: 'uid name createdAt' });
-    res.json({
-      code: 2007,
-      message: '获取弹幕房间所有弹幕成功',
-      body: { danmaku: danmakus }
+  const roomid = req.room.id;
+  req.danmakus = await Danmaku
+    .find({ room: roomid }, 'student content createdAt')
+    .populate({ path: 'student', select: 'uid name' }, (err, danmakus) => {
+      if (err) next(err);
+      req.danmakus = danmakus;
     });
-  })().catch(e => console.error(e));
+});
+
+router.get('/rooms/danmakus', (req, res, next) => {
+  const danmakus = req.danmakus;
+  res.json({
+    code: 2007,
+    message: '获取弹幕房间所有弹幕成功',
+    body: { danmaku: danmakus }
+  });
+});
+
+router.get('/rooms/danmakus/download', (req, res, next) => {
+  const danmakus = req.danmakus;
+  const table = ['弹幕id', '学号', '姓名', '创建时间', '内容', '过滤'];
+  danmakus.forEach((danmaku) => {
+    table.push([
+      danmaku._id,
+      danmaku.student.uid,
+      danmaku.student.name,
+      moment(danmaku.createdAt).utcOffset(8).format('YYYY-MM-DD HH:mm:ss'),
+      danmaku.content,
+      danmaku.blocked ? '√' : ''
+    ]);
+  });
+  const buffer = xlsx.build([{
+    name: `${req.room.title}`,
+    data: table
+  }]);
+  const filename = `${req.room.title}-弹幕历史.xlsx`;
+  res.setHeader('Content-Type', 'application/octet-stream');
+  res.setHeader('Content-Disposition', 'attachment;filename=' + querystring.escape(filename));
+  res.end(buffer);
 });
 
 function checkLogin(req, res, next) {
