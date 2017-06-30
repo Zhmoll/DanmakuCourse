@@ -20,7 +20,8 @@ router.post('/reg', (req, res, next) => {
     if (err) return next(err);
     res.json({
       code: 2004,
-      message: '注册成功！'
+      message: '注册成功！',
+      body: {}
     });
   });
 });
@@ -34,14 +35,16 @@ router.post('/login', (req, res, next) => {
     if (!teacher) {
       return res.json({
         code: 4001,
-        message: '找不到该教师'
+        message: '找不到该教师',
+        body: {}
       });
     }
 
     if (teacher.password != password) {
       return res.json({
         code: 4002,
-        message: '教师工号密码不匹配'
+        message: '教师工号密码不匹配',
+        body: {}
       });
     }
     const rooms = await Room.find({ teacher: teacher.id, deleted: false }, '-deleted -teacher');
@@ -85,7 +88,8 @@ router.post('/rooms', checkLogin, (req, res, next) => {
   if (!title)
     return res.json({
       code: 4003,
-      message: '弹幕房间信息不完整'
+      message: '弹幕房间信息不完整',
+      body: {}
     });
   if (!containers || !Array.isArray(containers))
     containers = [];
@@ -139,7 +143,8 @@ router.delete('/rooms', checkLogin, checkPossessRoom, (req, res, next) => {
     if (err) return next(err);
     res.json({
       code: 2005,
-      message: '删除成功！'
+      message: '删除成功！',
+      body: {}
     });
   });
 });
@@ -203,7 +208,8 @@ function checkLogin(req, res, next) {
   if (!teacherid || !secret) {
     return res.json({
       code: 4007,
-      message: '需要授权访问'
+      message: '需要授权访问',
+      body: {}
     });
   }
   Teacher.findOne({ _id: teacherid, secret }, (err, teacher) => {
@@ -211,7 +217,8 @@ function checkLogin(req, res, next) {
     if (!teacher)
       return res.json({
         code: 4000,
-        message: '认证信息错误'
+        message: '认证信息错误',
+        body: {}
       });
     req.teacher = teacher;
     next();
@@ -224,13 +231,15 @@ function checkPossessRoom(req, res, next) {
   if (!roomid) {
     return res.json({
       code: 4004,
-      message: "缺少房间id信息"
+      message: "缺少房间id信息",
+      body: {}
     });
   }
   if (teacher.rooms.indexOf(roomid) == -1) {
     return res.json({
       code: 4005,
-      message: "没有对该房间访问的权限"
+      message: "没有对该房间访问的权限",
+      body: {}
     });
   }
   Room.findOne({ _id: roomid, deleted: false }, (err, room) => {
@@ -238,7 +247,8 @@ function checkPossessRoom(req, res, next) {
     if (!room) {
       return res.json({
         code: 4006,
-        message: "房间已被删除"
+        message: "房间已被删除",
+        body: {}
       });
     }
     req.room = room;
