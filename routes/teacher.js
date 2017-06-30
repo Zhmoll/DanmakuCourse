@@ -226,7 +226,7 @@ router.get('/rooms/danmakus', (req, res, next) => {
 
 router.get('/rooms/danmakus/download', (req, res, next) => {
   const danmakus = req.danmakus;
-  const table = ['弹幕id', '学号', '姓名', '创建时间', '内容', '过滤'];
+  const table = [['弹幕id', '学号', '姓名', '创建时间', '内容', '过滤']];
   danmakus.forEach((danmaku) => {
     table.push([
       danmaku._id,
