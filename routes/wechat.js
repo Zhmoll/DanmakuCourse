@@ -89,7 +89,7 @@ function danmuku_helper(message, req, res) {
         return;
       }
       await Danmuku.create({ student: req.wxsession.userid, content: content, room: roomid });
-      wsDanmuku[roomid].ws.send(JSON.stringify({ type: 'danmuku', body: { uid, name, content } }));
+      wsDanmuku[roomid].ws.send(JSON.stringify({ type: 'danmuku', body: { uid, name, content } }), console.error);
       res.reply('发送成功！');
     }
     else {
