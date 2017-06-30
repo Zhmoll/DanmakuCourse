@@ -39,7 +39,7 @@ DanmukuCourse Serverside 说明
 
 ## 2、创建弹幕房间
 
-`post` `/teachers/rooms?teacherid=123123&secret=123123`
+`post` `/teachers/rooms?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631`
 
 路由中，教师id和密钥需要正确填写
 
@@ -68,7 +68,7 @@ DanmukuCourse Serverside 说明
 
 ## 3、修改弹幕房间
 
-`put` `/teachers/rooms?teacherid=123123&secret=123123&roomid=123123`
+`put` `/teachers/rooms?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
 
 路由中，roomid填写选择要修改的房间的id，教师id和密钥需要正确填写
 
@@ -97,18 +97,27 @@ DanmukuCourse Serverside 说明
 
 ## 4、获取所有弹幕房间
 
-`get` `/teachers/rooms?teacherid=123123&secret=123123`
+`get` `/teachers/rooms?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631`
 
 返回
 
 ```json
 {
-  "code": 2003,
-  "message": "获取教师所拥有房间成功",
-  "body": {
-    "rooms": [{"title":"2018年春季数据结构课堂","containers":["14051534","14051533","14051532"]},
-             {"title":"2019年春季数据结构课堂","containers":["14051534","14051533","14051532"]}]
-  }
+    "code": 2003,
+    "message": "获取教师所拥有房间成功",
+    "body": {
+        "rooms": [
+            {
+                "roomid": "5955db7223738d22f8778093",
+                "title": "2018年春季数据结构课堂",
+                "containers": [
+                    "14051534",
+                    "14051309",
+                    "14051238"
+                ]
+            }
+        ]
+    }
 }
 ```
 
@@ -133,6 +142,51 @@ DanmukuCourse Serverside 说明
   "message": "注册成功"
 }
 ```
+
+## 6、教师获得签到表
+
+`get` `/teachers/rooms/signins?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
+
+返回
+
+```json
+{
+    "code": 2006,
+    "message": "获取该弹幕房所有签到记录成功！",
+    "body": {
+        "table": [
+            [
+                "学号",
+                "2017-06-30 14:41:13",
+                "2017-06-30 15:56:54"
+            ],
+            [
+                "14051238",
+                "×",
+                "×"
+            ],
+            [
+                "14051309",
+                "×",
+                "×"
+            ],
+            [
+                "14051534",
+                "√",
+                "√"
+            ]
+        ]
+    }
+}
+```
+
+在table中，除第一行每一行都是一个学生在所有次签到的记录。具体是什么样子可以访问下一个接口预览。
+
+## 7、教师下载签到表
+
+`get` `/teachers/rooms/signins/download?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
+
+浏览器访问，弹出下载文件。
 
 # 二、WebSocket协议
 

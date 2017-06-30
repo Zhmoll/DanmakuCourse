@@ -11,9 +11,10 @@ module.exports = {
         url: 'mongodb://localhost/DanmukuCourse'
     },
     session: {
+        name: 'sid',
         secret: 'zhmolldanmuku!!!',
         resave: false,
-        saveUninitialized: true,
+        saveUninitialized: false,
         cookie: { maxAge: 3 * 24 * 3600 },
         database: 'mongodb://localhost/DanmukuCourse'
     }

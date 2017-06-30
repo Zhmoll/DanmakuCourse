@@ -4,7 +4,9 @@ const Teacher = require('../model/teachers');
 const Room = require('../model/rooms');
 const Signin = require('../model/signin');
 const crypto = require('crypto');
-const _ = require('lodash');
+const moment = require('moment');
+const xlsx = require('node-xlsx');
+const querystring = require('querystring');
 
 router.get('/', (req, res, next) => {
   res.send('hello!');
@@ -59,11 +61,11 @@ router.post('/login', (req, res, next) => {
 // 教师获取所有房间
 router.get('/rooms', checkLogin, (req, res, next) => {
   const { teacherid } = req.query;
-  Room.find({ teacher, deleted: false }, (err, rooms) => {
+  Room.find({ teacher: teacherid, deleted: false }, (err, rooms) => {
     if (err) return next(err);
     const body = [];
     rooms.forEach((room) => {
-      body.push({ title: room.title, containers: room.containers });
+      body.push({ roomid: room.id, title: room.title, containers: room.containers });
     });
     res.json({
       code: 2003,
@@ -143,8 +145,57 @@ router.delete('/rooms', checkLogin, checkPossessRoom, (req, res, next) => {
 });
 
 // 获取所有签到信息
-router.get('/rooms/signin', checkLogin, checkPossessRoom, (req, res, next) => {
+router.use('/rooms/signins', checkLogin, checkPossessRoom, (req, res, next) => {
+  const roomid = req.query.roomid;
+  const room = req.room;
+  Signin.find({ room: roomid }, 'id createdAt containers', (err, signins) => {
+    if (err) return next(err);
 
+    const firstline = ['学号'];
+    const stu = {};
+    for (const signin of signins) {
+      firstline.push(moment(signin.createdAt).utcOffset(8).format('YYYY-MM-DD HH:mm:ss'));
+
+      let index;
+      for (let uid of room.containers) {
+        if (!stu[uid]) stu[uid] = [];
+        index = signin.containers.indexOf(uid);
+        if (index != -1) stu[uid].push('√');
+        else stu[uid].push('×');
+      }
+    }
+
+    const table = Object.entries(stu);
+    table.sort((a, b) => a[0] > b[0]);
+    table.forEach((row) => {
+      row[1].forEach((col) => row.push(col));
+      row.splice(1, 1);
+    });
+    table.unshift(firstline);
+
+    req.table = table;
+    next();
+  });
+});
+
+router.get('/rooms/signins', (req, res, next) => {
+  res.json({
+    code: 2006,
+    message: '获取该弹幕房所有签到记录成功！',
+    body: { table: req.table }
+  });
+});
+
+router.get('/rooms/signins/download', (req, res, next) => {
+  const table = req.table;
+  const buffer = xlsx.build([{
+    name: `${req.room.title}`,
+    data: table
+  }]);
+  const filename = '签到结果.xlsx';
+  res.setHeader('Content-Type', 'application/octet-stream');
+  res.setHeader('Content-Disposition', 'attachment;filename=' + querystring.escape(filename));
+  res.end(buffer);
 });
 
 function checkLogin(req, res, next) {
