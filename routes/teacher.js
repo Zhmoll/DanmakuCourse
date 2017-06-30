@@ -206,8 +206,7 @@ router.get('/rooms/signins/download', (req, res, next) => {
 
 router.use('/rooms/danmakus', checkLogin, checkPossessRoom, (req, res, next) => {
   const roomid = req.room.id;
-  req.danmakus = await Danmaku
-    .find({ room: roomid }, 'student content createdAt')
+  req.danmakus = Danmaku.find({ room: roomid }, 'student content createdAt')
     .populate({ path: 'student', select: 'uid name' }, (err, danmakus) => {
       if (err) next(err);
       req.danmakus = danmakus;
