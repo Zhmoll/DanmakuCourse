@@ -1,4 +1,4 @@
-DanmukuCourse Serverside 说明
+# DanmukuCourse Serverside 说明
 
 ----------
 
@@ -229,7 +229,7 @@ DanmukuCourse Serverside 说明
 
 其中上面的三个参数均由前一个接口登录后获得。
 
-测试用 ws://45.76.156.38:8080/?teacherid=5953636f1df92707286c9fb5&secret=123&roomid=595362d61df92707286c9fb2
+测试用 `ws://45.76.156.38:8080/teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
 
 ## 2、ws连接通信协议统一格式
 
