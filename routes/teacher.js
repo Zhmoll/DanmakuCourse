@@ -211,6 +211,7 @@ router.use('/rooms/danmakus', checkLogin, checkPossessRoom, (req, res, next) => 
     .exec((err, danmakus) => {
       if (err) next(err);
       req.danmakus = danmakus;
+      next();
     });
 });
 
