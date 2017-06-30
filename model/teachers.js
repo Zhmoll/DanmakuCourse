@@ -8,8 +8,4 @@ const teacherSchema = new Schema({
   rooms: [{ type: Schema.Types.ObjectId, ref: 'Room' }]
 });
 
-teacherSchema.methods.validatePassword = (password) => {
-  return password == this.password;
-};
-
 module.exports = mongoose.model('Teacher', teacherSchema);

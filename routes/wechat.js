@@ -1,153 +1,164 @@
-const wechat = require('wechat');
 const express = require('express');
+const router = express.Router();
+const wechat = require('wechat');
 const config = require('config-lite')(__dirname).wechat;
 const Student = require('../model/students');
 const Signin = require('../model/signin');
+const Danmuku = require('../model/danmukus');
+const Room = require('../model/rooms');
 const wsDanmuku = require('../lib/websocket');
 
-const middleware = wechat(config, wechat.text(function (message, req, res, next) {
-  // message为文本内容
-  console.log(message);
-  (async () => {
-    try {
-      switch (message.Content.split('+')[0]) {
-        case '绑定': return bind_helper(message, req, res);
-        default: break;
-      }
-
-      let student;
-      if (!req.wxsession.uid) {
-        student = await Student.findOne({ openid: message.FromUserName });
-        if (!student) {
-          res.reply(`你还未绑定账号！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
-          return;
+const mw = wechat(config)
+  .text((message, req, res, next) => {
+    switch (message.Content.split('+')[0]) {
+      case '绑定':
+        return bind_helper(message, req, res);
+      default:
+        return danmuku_helper(message, req, res);
+    }
+  })
+  .event((message, req, res, next) => {
+    switch (message.Event) {
+      case 'subscribe':
+        return subscribe_helper(message, req, res);
+      case 'scancode_waitmsg': {
+        switch (message.EventKey) {
+          case 'signin':
+            return signin_helper(message, req, res);
         }
-        req.wxsession.userid = student.id;
-        req.wxsession.uid = student.uid;
-        req.wxsession.name = student.name;
       }
-
-      const uid = req.wxsession.uid;
-      const name = req.wxsession.name;
-      const content = message.Content;
-      const roomid = req.wxsession.roomid; //'595362d61df92707286c9fb2';// 
-
-      if (roomid && wsDanmuku[roomid]) {
-        wsDanmuku[roomid].ws.send(JSON.stringify({ type: 'danmuku', body: { uid, name, content } }));
-        res.reply('发送成功！');
-      }
-      else {
-        delete req.wxsession.roomid;
-        res.reply('目前暂未加入弹幕房间');
-      }
+      default:
+        res.reply('不知道你想要干什么');
     }
-    catch (e) {
-      console.error(e);
-    }
+  })
+  .middlewarify();
 
-  })();
-}).image(function (message, req, res, next) {
-  // message为图片内容
-}).voice(function (message, req, res, next) {
-  // message为音频内容
-}).video(function (message, req, res, next) {
-  // message为视频内容
-}).shortvideo(function (message, req, res, next) {
-  // message为短视频内容
-}).location(function (message, req, res, next) {
-  // message为位置内容
-}).link(function (message, req, res, next) {
-  // message为链接内容
-}).event(function (message, req, res, next) {
-  // message为事件内容
-  switch (message.Event) {
-    case 'subscribe': subscribe_helper(message, req, res); break;
-    case 'scancode_waitmsg': scancode_helper(message, req, res); break;
-  }
-}).device_text(function (message, req, res, next) {
-  // message为设备文本消息内容
-}).device_event(function (message, req, res, next) {
-  // message为设备事件内容
-}));
+router.use('/', (req, res, next) => {
+  console.log(req.body);
+  next();
+}, mw);
 
-function subscribe_helper(message, req, res) {
-  const openid = message.FromUserName;
+// 绑定学生身份
+function bind_helper(message, req, res) {
   (async () => {
-    const user = await Student.findOne({ openid });
-    if (user) {
-      res.reply(`欢迎回来，${user.name}！`);
-    }
-    else {
-      res.reply(`请绑定学生信息，格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
-    }
-  })();
+    const openid = message.FromUserName;
+    const [identity, uid, name] = message.Content.split('+');
+    if (!uid || !name)
+      return res.reply(`绑定格式错误！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
+    const user = await Student.findOne({ uid });
+    if (!user)
+      return res.reply('该学生不存在，请确认学生信息并重新尝试');
+    if (user.name != name)
+      return res.reply('学号与姓名不匹配，请确认学生信息并重新尝试');
+
+    await Student.update({ openid }, { $unset: ['openid'] });
+    user.openid = openid;
+    await user.save();
+    req.wxsession.uid = user.uid;
+    req.wxsession.userid = user.id;
+    req.wxsession.name = user.name;
+    res.reply(`绑定成功，${name}，欢迎加入弹幕课堂！`);
+  })().catch(e => console.error(e));
 }
 
-function bind_helper(message, req, res) {
-  const openid = message.FromUserName;
-  const [identity, uid, name] = message.Content.split('+');
-  if (!uid || !name)
-    return res.reply(`绑定格式错误！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
-
+// 发送弹幕
+function danmuku_helper(message, req, res) {
   (async () => {
-    try {
-      const user = await Student.findOne({ uid });
-      if (!user)
-        return res.reply('该学生不存在，请确认学生信息并重新尝试');
-      if (user.name != name)
-        return res.reply('学号与姓名不匹配，请确认学生信息并重新尝试');
+    // 确保登录 - start
+    let student;
+    if (!req.wxsession.uid) {
+      student = await Student.findOne({ openid: message.FromUserName });
+      if (!student) {
+        res.reply(`你还未绑定账号！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
+        return;
+      }
+      req.wxsession.userid = student.id;
+      req.wxsession.uid = student.uid;
+      req.wxsession.name = student.name;
+    }
+    // 确保登录 - end
 
-      await Student.update({ openid }, { $unset: ['openid'] });
-      user.openid = openid;
-      await user.save();
+    const uid = req.wxsession.uid;
+    const name = req.wxsession.name;
+    const content = message.Content;
+    const roomid = req.wxsession.roomid;
+
+    if (roomid && wsDanmuku[roomid]) {
+      if (wsDanmuku[roomid].containers && wsDanmuku[roomid].containers.indexOf(uid) == -1) {
+        res.reply('发送失败，请确认是否为该课堂成员！');
+        return;
+      }
+      await Danmuku.create({ student: req.wxsession.userid, content: content, room: roomid });
+      wsDanmuku[roomid].ws.send(JSON.stringify({ type: 'danmuku', body: { uid, name, content } }));
+      res.reply('发送成功！');
+    }
+    else {
+      delete req.wxsession.roomid;
+      res.reply('目前暂未加入弹幕房间');
+    }
+  })().catch(e => console.error(e));
+}
+
+// 订阅公众号
+function subscribe_helper(message, req, res) {
+  (async () => {
+    const openid = message.FromUserName;
+    const user = await Student.findOne({ openid });
+    if (user) {
       req.wxsession.uid = user.uid;
       req.wxsession.userid = user.id;
       req.wxsession.name = user.name;
-      res.reply(`绑定成功，${name}，欢迎加入弹幕课堂！`);
+      res.reply(`欢迎回来，${user.name}！`);
     }
-    catch (e) {
-      console.error(e);
+    else {
+      res.reply(`欢迎使用弹幕课堂！请绑定学生信息，格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
     }
-  })();
+  })().catch(e => console.error(e));
 }
 
-function scancode_helper(message, req, res) {
-  switch (message.EventKey) {
-    case 'signin': signin_helper(message, req, res); break;
-  }
-}
-
+// 签到
 function signin_helper(message, req, res) {
-  const openid = message.FromUserName;
-  const uid = req.wxsession.uid;
-  const key = message.ScanCodeInfo;
-
-  if (!uid) {
-    res.reply(`尚未绑定个人信息！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
-    return;
-  }
-
   (async () => {
-    const signin = await Signin.findOne({ key }).populate('room');
-    if (!signin) {
-      res.reply('签到失败（二维码已过期），请重试！');
-      return;
-    }
-    for (let i = 0; i < signin.containers.length; i++) {
-      if (signin.containers[i] == uid) {
-        res.reply(`本次课(${signin.room.title})你已经签过到啦！`);
+    // 确保登录 - start
+    let student;
+    if (!req.wxsession.uid) {
+      student = await Student.findOne({ openid: message.FromUserName });
+      if (!student) {
+        res.reply(`你还未绑定账号！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
         return;
       }
+      req.wxsession.userid = student.id;
+      req.wxsession.uid = student.uid;
+      req.wxsession.name = student.name;
+    }
+    // 确保登录 - end
+
+    const uid = req.wxsession.uid;
+    const key = message.ScanCodeInfo.ScanResult;
+
+    const signin = await Signin.findOne({ key }).populate('room');
+    if (!signin) {
+      res.reply('签到失败，二维码已过期，请重试！');
+      return;
+    }
+    const room = await Room.findOne({ _id: signin.room.id, deleted: false });
+    if (!room) {
+      res.reply('签到失败，弹幕房不存在！');
+      return
+    }
+    if (room.containers.indexOf(uid) == -1) {
+      res.reply(`签到失败，你不是该弹幕房成员！`);
+      return;
+    }
+    if (signin.containers.indexOf(uid) != -1) {
+      res.reply(`本次课[${signin.room.title}]你已经签过到啦！`);
+      return;
     }
     signin.containers.push(uid);
     await signin.save();
     req.wxsession.roomid = signin.room.id;
-    res.reply(`本次签到(${signin.room.title})成功啦！`);
-  })();
+    res.reply(`本次签到[${signin.room.title}]成功啦！`);
+  })().catch((e) => console.error(e));
 }
 
-module.exports = (app) => {
-  app.use('/wechat', (req, res, next) => {
-    next();
-  }, middleware);
-}
+module.exports = router;

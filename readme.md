@@ -48,7 +48,7 @@ DanmukuCourse Serverside 说明
 ```json
 {
   "title": "2018年春季数据结构课堂",
-  "containers": ["14051534","14051533","14051532"]
+  "containers": ["14051534","14051309","14051238"]
 }
 ```
 
@@ -61,7 +61,7 @@ DanmukuCourse Serverside 说明
   "body": {
     "title": "2018年春季数据结构课堂",
     "roomid": "123123123",
-    "containers": ["14051534","14051533","14051532"]
+    "containers": ["14051534","14051309","14051238"]
   }
 }
 ```
