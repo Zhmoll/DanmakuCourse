@@ -20,7 +20,7 @@ router.post('/reg', (req, res, next) => {
     if (err) return next(err);
     res.json({
       code: 2004,
-      message: '注册成功'
+      message: '注册成功！'
     });
   });
 });
@@ -202,7 +202,7 @@ function checkLogin(req, res, next) {
   const { teacherid, secret } = req.query;
   if (!teacherid || !secret) {
     return res.json({
-      code: 4001,
+      code: 4007,
       message: '需要授权访问'
     });
   }

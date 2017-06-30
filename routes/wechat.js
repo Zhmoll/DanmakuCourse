@@ -138,7 +138,7 @@ function signin_helper(message, req, res) {
 
     const signin = await Signin.findOne({ key }).populate('room');
     if (!signin) {
-      res.reply('签到失败，二维码已过期，请重试！');
+      res.reply('签到失败，二维码不正确或已过期，请重试！');
       return;
     }
     const room = await Room.findOne({ _id: signin.room.id, deleted: false });

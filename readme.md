@@ -4,6 +4,26 @@ DanmukuCourse Serverside 说明
 
 # 一、Http协议
 
+## 0、代码表
+
+| code | message         | 备注                     |
+| ---- | --------------- | ---------------------- |
+| 2000 | 登陆成功！           |                        |
+| 2001 | 创建成功！           | 弹幕房间创建成功               |
+| 2002 | 修改成功！           | 弹幕房间修改成功               |
+| 2003 | 获取教师所拥有房间成功     |                        |
+| 2004 | 注册成功！           |                        |
+| 2005 | 删除成功！           | 弹幕房间删除成功               |
+| 2006 | 获取该弹幕房所有签到记录成功！ |                        |
+| 4000 | 认证信息错误          | 给予了错误的teacherid和secret |
+| 4001 | 找不到该教师          | 登录使用的sid没有被注册过         |
+| 4002 | 教师工号密码不匹配       |                        |
+| 4003 | 弹幕房间信息不完整       | 缺少title或containers     |
+| 4004 | 缺少房间id信息        | 缺少roomid               |
+| 4005 | 没有对该房间访问的权限     | 给予的room和teacher没有所属关系  |
+| 4006 | 房间已被删除          |                        |
+| 4007 | 需要授权访问          | teacherid和secret信息不完整  |
+
 ## 1、教师登录
 
 `post` `/teachers/login`
@@ -187,6 +207,19 @@ DanmukuCourse Serverside 说明
 `get` `/teachers/rooms/signins/download?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
 
 浏览器访问，弹出下载文件。
+
+## 8、删除弹幕房间
+
+`delete` `/teachers/rooms?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
+
+返回
+
+```json
+{
+    "code": 2005,
+    "message": "删除成功！"
+}
+```
 
 # 二、WebSocket协议
 
