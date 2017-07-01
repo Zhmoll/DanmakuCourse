@@ -6,7 +6,12 @@
         {
           "type": "click",
           "name": "弹幕历史",
-          "key":"danmaku_histroy"
+          "key": "danmaku_histroy"
+        },
+        {
+          "type": "click",
+          "name": "弹幕历史",
+          "key": "signin_histroy"
         }
       ]
     },

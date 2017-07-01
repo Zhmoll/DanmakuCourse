@@ -24,6 +24,8 @@ const mw = wechat(config)
         switch (message.EventKey) {
           case 'danmaku_histroy':
             return danmaku_histroy(message, req, res);
+          case 'signin_histroy':
+            return signin_histroy(message, req, res);
         }
       }
       case 'subscribe':
@@ -131,9 +133,8 @@ function subscribe_helper(message, req, res) {
 function danmaku_histroy(message, req, res) {
   (async () => {
     // 确保登录 - start
-    let student;
     if (!req.wxsession.uid) {
-      student = await Student.findOne({ openid: message.FromUserName });
+      const student = await Student.findOne({ openid: message.FromUserName });
       if (!student) {
         res.reply(`你还未绑定账号！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
         return;
@@ -147,14 +148,40 @@ function danmaku_histroy(message, req, res) {
     const danmakus = await Danmaku
       .find({ student: req.wxsession.userid }, '-_id content createdAt room', { limit: 7 })
       .sort('-createdAt')
-      .populate({
-        path: 'room',
-        select: 'title'
-      });
+      .populate({ path: 'room', select: 'title' });
     const result = [{ title: '弹幕课堂 - 最近七条用户弹幕记录' }];
     danmakus.forEach((danmaku) => {
       result.push({
-        title: `内容：${danmaku.content}\n房间：${danmaku.room.title}\n时间：${moment(danmaku.createdAt).utcOffset(8).format('YYYY-MM-DD HH:mm:ss')}`
+        title: `内容：${danmaku.content}\n课堂：${danmaku.room.title}\n时间：${moment(danmaku.createdAt).utcOffset(8).format('YYYY-MM-DD HH:mm:ss')}`
+      });
+    });
+    res.reply(result);
+  })().catch(e => console.error(e));
+}
+
+function signin_histroy(message, req, res) {
+  (async () => {
+    // 确保登录 - start
+    if (!req.wxsession.uid) {
+      const student = await Student.findOne({ openid: message.FromUserName });
+      if (!student) {
+        res.reply(`你还未绑定账号！格式为绑定+学号+姓名，例如：'绑定+12345678+张三'`);
+        return;
+      }
+      req.wxsession.userid = student.id;
+      req.wxsession.uid = student.uid;
+      req.wxsession.name = student.name;
+    }
+    // 确保登录 - end
+    const signins = await Signin
+      .find({ containers: { $in: req.wxsession.uid } }, 'room createdAt', { limit: 7 })
+      .sort('-createdAt')
+      .populate({ path: 'room', select: 'title' });
+
+    const result = [{ title: '弹幕课堂 - 最近七条用户签到记录' }];
+    signins.forEach((signin) => {
+      result.push({
+        title: `课堂：${signin.room.title}\n时间：${moment(signin.createdAt).utcOffset(8).format('YYYY-MM-DD HH:mm:ss')}`
       });
     });
     res.reply(result);
