@@ -27,7 +27,22 @@ const mw = wechat(config)
             return danmaku_histroy(message, req, res);
           case 'signin_histroy':
             return signin_histroy(message, req, res);
+          case 'tech':
+            return res.reply(`施工中……`);
+          case 'helper':
+            return res.reply(`学生：
+            1、在微信公众号上绑定个人信息（“绑定+学号+密码”）；
+            2、扫描课堂上教室给出的签到二维码；
+            3、签到成功后发送弹幕即可让弹幕进入课堂。
+            
+            教师：
+            1、打开客户端，登录账号，若没有账号请先注册；
+            2、选择弹幕房间建立连接，若没有事先创建好的弹幕房间，请先创建；
+            3、建立连接后，选择签到功能，签到完成的同学即可发送弹幕进入课堂。`);
+          case 'aboutus':
+            return res.reply('杭州电子科技大学计算机学院\n短学期作品 - 弹幕课堂\n作者：张效伟、郑鹏达、陈钧博');
         }
+        break;
       }
       case 'subscribe':
         return subscribe_helper(message, req, res);

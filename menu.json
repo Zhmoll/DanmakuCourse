@@ -16,17 +16,27 @@
       ]
     },
     {
-      "type": "click",
+      "type": "scancode_waitmsg",
       "name": "签到",
       "key": "signin"
     },
     {
-      "name": "菜单2",
+      "name": "帮助",
       "sub_button": [
         {
-          "type": "view",
-          "name": "搜索",
-          "url": "http://www.soso.com/"
+          "type": "click",
+          "name": "使用帮助",
+          "key": "helper"
+        },
+        {
+          "type": "click",
+          "name": "技术实现",
+          "key": "tech"
+        }
+        {
+          "type": "click",
+          "name": "关于我们",
+          "key": "aboutus"
         }
       ]
     }
