@@ -19,6 +19,7 @@ const mw = wechat(config)
     }
   })
   .event((message, req, res, next) => {
+    console.log(message);
     switch (message.Event) {
       case 'CLICK': {
         switch (message.EventKey) {
