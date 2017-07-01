@@ -20,7 +20,7 @@ const mw = wechat(config)
   })
   .event((message, req, res, next) => {
     switch (message.Event) {
-      case 'click': {
+      case 'CLICK': {
         switch (message.EventKey) {
           case 'danmaku_histroy':
             return danmaku_histroy(message, req, res);
@@ -41,7 +41,6 @@ const mw = wechat(config)
   .middlewarify();
 
 router.use('/', (req, res, next) => {
-  console.log(req.body);
   next();
 }, mw);
 
