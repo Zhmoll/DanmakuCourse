@@ -19,7 +19,6 @@ const mw = wechat(config)
     }
   })
   .event((message, req, res, next) => {
-    console.log(message);
     switch (message.Event) {
       case 'CLICK': {
         switch (message.EventKey) {
@@ -30,17 +29,11 @@ const mw = wechat(config)
           case 'tech':
             return res.reply(`施工中……`);
           case 'helper':
-            return res.reply(`学生：
-            1、在微信公众号上绑定个人信息（“绑定+学号+密码”）；
-            2、扫描课堂上教室给出的签到二维码；
-            3、签到成功后发送弹幕即可让弹幕进入课堂。
-            
-            教师：
-            1、打开客户端，登录账号，若没有账号请先注册；
-            2、选择弹幕房间建立连接，若没有事先创建好的弹幕房间，请先创建；
-            3、建立连接后，选择签到功能，签到完成的同学即可发送弹幕进入课堂。`);
+            return res.reply('学生：\n1、在微信公众号上绑定个人信息（“绑定+学号+密码”）；\n2、扫描课堂上教室给出的签到二维码；\n'
+              + '3、签到成功后发送弹幕即可让弹幕进入课堂。\n\n教师：\n1、打开客户端，登录账号，若没有账号请先注册；\n'
+              + '2、选择弹幕房间建立连接，若没有事先创建好的弹幕房间，请先创建；\n3、建立连接后，选择签到功能，签到完成的同学即可发送弹幕进入课堂。');
           case 'aboutus':
-            return res.reply('杭州电子科技大学计算机学院\n短学期作品 - 弹幕课堂\n作者：张效伟、郑鹏达、陈钧博');
+            return res.reply('杭州电子科技大学\n短学期作品 - 弹幕课堂\n作者：\n张效伟、郑鹏达、陈钧博');
         }
         break;
       }
