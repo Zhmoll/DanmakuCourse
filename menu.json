@@ -10,7 +10,7 @@
         },
         {
           "type": "click",
-          "name": "弹幕历史",
+          "name": "签到历史",
           "key": "signin_histroy"
         }
       ]

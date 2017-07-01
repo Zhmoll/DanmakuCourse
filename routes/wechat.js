@@ -174,7 +174,7 @@ function signin_histroy(message, req, res) {
     }
     // 确保登录 - end
     const signins = await Signin
-      .find({ containers: { $in: req.wxsession.uid } }, 'room createdAt', { limit: 7 })
+      .find({ containers: { $in: [req.wxsession.uid] } }, 'room createdAt', { limit: 7 })
       .sort('-createdAt')
       .populate({ path: 'room', select: 'title' });
 
