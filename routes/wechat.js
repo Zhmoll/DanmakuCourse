@@ -145,7 +145,7 @@ function danmaku_histroy(message, req, res) {
     // 确保登录 - end
 
     const danmakus = await Danmaku
-      .find({ student: req.wxsession.userid }, '-_id content createdAt room', { limit: 1 })
+      .find({ student: req.wxsession.userid }, '-_id content createdAt room', { limit: 7 })
       .sort('-createdAt')
       .populate({
         path: 'room',
@@ -153,9 +153,8 @@ function danmaku_histroy(message, req, res) {
       });
     const result = [{ title: '弹幕课堂 - 最近七条用户弹幕记录' }];
     danmakus.forEach((danmaku) => {
-      danmaku.createdAt = moment(danmaku.createdAt).utcOffset(8).format('YYYY-MM-DD HH:mm:ss');
       result.push({
-        title: `内容：${danmaku.content}\n房间：${danmaku.room.title}\n时间：${danmaku.createdAt}`
+        title: `内容：${danmaku.content}\n房间：${danmaku.room.title}\n时间：${moment(danmaku.createdAt).utcOffset(8).format('YYYY-MM-DD HH:mm:ss')}`
       });
     });
     res.reply(result);
