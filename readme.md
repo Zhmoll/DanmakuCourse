@@ -16,6 +16,7 @@
 | 2005 | 删除成功！           | 弹幕房间删除成功               |
 | 2006 | 获取该弹幕房所有签到记录成功！ |                        |
 | 2007 | 获取弹幕房间所有弹幕成功    |                        |
+| 2008 | 修改密码成功！         |                        |
 | 4000 | 认证信息错误          | 给予了错误的teacherid和secret |
 | 4001 | 找不到该教师          | 登录使用的sid没有被注册过         |
 | 4002 | 教师工号密码不匹配       |                        |
@@ -24,6 +25,7 @@
 | 4005 | 没有对该房间访问的权限     | 给予的room和teacher没有所属关系  |
 | 4006 | 房间已被删除          |                        |
 | 4007 | 需要授权访问          | teacherid和secret信息不完整  |
+|      | 相同工号用户已注册       |                        |
 
 ## 1、教师登录
 
@@ -60,7 +62,7 @@
 
 ## 2、创建弹幕房间
 
-`post` `/teachers/rooms?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631`
+`post` `/teachers/rooms??teacherid={teacherid}&secret={secret}`
 
 路由中，教师id和密钥需要正确填写
 
@@ -89,7 +91,7 @@
 
 ## 3、修改弹幕房间
 
-`put` `/teachers/rooms?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
+`put` `/teachers/rooms?teacherid={teacherid}&secret={secret}&roomid={roomid}`
 
 路由中，roomid填写选择要修改的房间的id，教师id和密钥需要正确填写
 
@@ -118,7 +120,7 @@
 
 ## 4、获取所有弹幕房间
 
-`get` `/teachers/rooms?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631`
+`get` `/teachers/rooms?teacherid={teacherid}&secret={secret}`
 
 返回
 
@@ -167,7 +169,7 @@
 
 ## 6、教师获得签到表
 
-`get` `/teachers/rooms/signins?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
+`get` `/teachers/rooms/signins?teacherid={teacherid}&secret={secret}&roomid={roomid}`
 
 返回
 
@@ -206,13 +208,13 @@
 
 ## 7、教师下载签到表
 
-`get` `/teachers/rooms/signins/download?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
+`get` `/teachers/rooms/signins/download?teacherid={teacherid}&secret={secret}&roomid={roomid}`
 
 浏览器访问，弹出下载文件。
 
 ## 8、删除弹幕房间
 
-`delete` `/teachers/rooms?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
+`delete` `/teachers/rooms?teacherid={teacherid}&secret={secret}&roomid={roomid}`
 
 返回
 
@@ -226,7 +228,7 @@
 
 ## 9、 获取房间弹幕历史
 
-`get` `/teachers/rooms/danmakus?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
+`get` `/teachers/rooms/danmakus?teacherid={teacherid}&secret={secret}&roomid={roomid}`
 
 返回
 
@@ -283,28 +285,42 @@
 
 ## 10、下载房间弹幕历史
 
-`get` `/teachers/rooms/danmakus/download?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
+`get` `/teachers/rooms/danmakus/download?teacherid={teacherid}&secret={secret}&roomid={roomid}`
 
 返回浏览器下载文件
+
+## 11、修改教师密码
+
+`put` `/teachers/changePassword?teacherid={teacherid}&secret={secret}`
+
+```json
+{
+  "password": "94165b0be8a06b797a6da9274afb827fc7b3eee83d45f10f17c81309992090ea",
+  "oldpassword": "94165b0be8a06b797a6da9274afb827fc7b3eee83d45f10f17c81309992090eb"
+}
+```
+
+其中旧密码是oldpassword，新密码是password。
 
 # 二、WebSocket协议
 
 ## 1、建立ws连接
 
-请求 ws://domain/danmaku?teacherid=123123&secret=123123&roomid=123123
+请求 `ws://domain/danmaku?teacherid={teacherid}&secret={secret}&roomid={roomid}`
 
 其中上面的三个参数均由前一个接口登录后获得。
-
-测试用 `ws://45.76.156.38:8080/danmaku?teacherid=5955db1323738d22f8778092&secret=3da449f20c780866dd84ca7be66ddbc103faf1dd55e771af41b0237527590631&roomid=5955db7223738d22f8778093`
 
 ## 2、ws连接通信协议统一格式
 
 ```json
 {
   "type": "消息类型",
-  "body": {}
+  "body": {},
+  "time": "1498917848281"
 }
 ```
+
+`time`为消息发送的时间，为Unix时间戳格式。服务器会携带此信息，而客户端不需要发送此信息。
 
 ## 3、签到
 
@@ -332,13 +348,15 @@
 {
   "type": "signin_code",
   "body": {
-     "key": "ddbbb1e9bc1f78b590c4200f67718c7b06f0c620266ee4d272fcba6cbd4506a4",
-     "count": 25,
-  }
+    "key": "ddbbb1e9bc1f78b590c4200f67718c7b06f0c620266ee4d272fcba6cbd4506a4",
+    "count": 1,
+    "containers": ["14051534"]
+  },
+  "time": "1498917848281"
 }
 ```
 
-需要将`key`转化为二维码显示，而`count`则为成功签到人数。
+需要将`key`转化为二维码显示，而`count`则为成功签到人数，`containers`为签到成功的同学的学号。
 
 ## 4、服务端通知消息
 
@@ -347,7 +365,8 @@
   "type": "info",
   "body": {
      "message": "来自服务器的信息"
-  }
+  },
+  "time": "1498917848281"
 }
 ```
 
@@ -361,7 +380,11 @@
   "body": {
      "uid": "学号",
      "name": "姓名",
-     "content": "内容"
-  }
+     "content": "内容",
+     "blocked": false
+  },
+  "time": "1498917848281"
 }
 ```
+
+`blocked`为弹幕消息是否不文明，不文明即为`true` 。

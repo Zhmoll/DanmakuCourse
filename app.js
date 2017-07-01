@@ -5,7 +5,7 @@ var logger = require('morgan');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var config = require('config-lite')(__dirname);
-const MongoStore = require('connect-mongo')(session);
+const RedisStore = require('connect-redis')(session);
 
 var app = express();
 // app.use(express.query());
@@ -19,7 +19,7 @@ app.use(session({
   resave: config.session.resave,
   saveUninitialized: config.session.saveUninitialized,
   cookie: config.session.cookie,
-  store: new MongoStore({ url: config.session.database })
+  store: new RedisStore()
 }));
 // app.use(express.static(path.join(__dirname, 'public')));
 

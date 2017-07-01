@@ -17,14 +17,47 @@ router.get('/', (req, res, next) => {
 router.post('/reg', (req, res, next) => {
   const { sid, password } = req.body;
   const processedPassword = processPassword(password);
-  Teacher.create({ sid, password: processedPassword }, (err, teacher) => {
-    if (err) return next(err);
-    res.json({
-      code: 2004,
-      message: '注册成功！',
-      body: {}
+  Teacher.count({ sid }, (err, count) => {
+    if (count) {
+      return res.json({
+        code: 4008,
+        message: '相同工号用户已注册',
+        body: {}
+      });
+    }
+    Teacher.create({ sid, password: processedPassword }, (err, teacher) => {
+      if (err) return next(err);
+      res.json({
+        code: 2004,
+        message: '注册成功！',
+        body: {}
+      });
     });
   });
+});
+
+// 教师修改密码
+router.put('/changePassword', checkLogin, (req, res, next) => {
+  const teacher = req.teacher;
+  const { password, oldpassword } = req.body;
+  const newProcessedPassword = processPassword(password);
+  const oldProcessedPassword = processPassword(oldpassword);
+  if (teacher.password != oldProcessedPassword) {
+    return res.json({
+      code: 4002,
+      message: '教师工号密码不匹配',
+      body: {}
+    });
+  }
+  teacher.password = newProcessedPassword;
+  teacher.save((err, teacher) => {
+    if (err) return next(err);
+    res.json({
+      code: 2008,
+      message: '修改密码成功！',
+      body: {}
+    });
+  })
 });
 
 // 教师登录，返回密钥、弹幕室名称和对应id
@@ -41,7 +74,7 @@ router.post('/login', (req, res, next) => {
       });
     }
 
-    if (teacher.password != password) {
+    if (teacher.password != processPassword(password)) {
       return res.json({
         code: 4002,
         message: '教师工号密码不匹配',
