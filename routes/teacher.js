@@ -74,9 +74,7 @@ router.get('/rooms', checkLogin, (req, res, next) => {
     res.json({
       code: 2003,
       message: '获取教师所拥有房间成功',
-      body: {
-        rooms: body
-      }
+      body: { rooms: body }
     });
   });
 });

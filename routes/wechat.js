@@ -8,6 +8,7 @@ const Danmaku = require('../model/danmakus');
 const Room = require('../model/rooms');
 const wsDanmaku = require('../lib/websocket');
 const moment = require('moment');
+const redis = require('../lib/redis');
 
 const mw = wechat(config)
   .text((message, req, res, next) => {
@@ -168,6 +169,7 @@ function danmaku_histroy(message, req, res) {
   })().catch(e => console.error(e));
 }
 
+// 签到历史
 function signin_histroy(message, req, res) {
   (async () => {
     // 确保登录 - start
@@ -217,28 +219,49 @@ function signin_helper(message, req, res) {
     const uid = req.wxsession.uid;
     const key = message.ScanCodeInfo.ScanResult;
 
-    const signin = await Signin.findOne({ key }).populate('room');
-    if (!signin) {
+    const signinid = await redis.getSigninByKey(key);
+    if (!signinid) {
       res.reply('签到失败，二维码不正确或已过期，请重试！');
       return;
     }
-    const room = await Room.findOne({ _id: signin.room.id, deleted: false });
-    if (!room) {
-      res.reply('签到失败，弹幕房不存在！');
-      return
-    }
-    if (room.containers.indexOf(uid) == -1) {
-      res.reply(`签到失败，你不是该弹幕房成员！`);
+    const signin = await Signin.findOne({ _id: signinid }).populate('room');
+    if (!signin || signin.finished) {
+      res.reply('签到失败，签到不存在或已结束！');
       return;
     }
     if (signin.containers.indexOf(uid) != -1) {
       res.reply(`本次课[${signin.room.title}]你已经签过到啦！`);
       return;
     }
+    const room = signin.room;
+    if (room.containers.indexOf(uid) == -1) {
+      res.reply(`签到失败，你不是该弹幕房成员！`);
+      return;
+    }
+
+    // const signin = await Signin.findOne({ key }).populate('room');
+    // if (!signin) {
+    //   res.reply('签到失败，二维码不正确或已过期，请重试！');
+    //   return;
+    // }
+    // const room = await Room.findOne({ _id: signin.room.id, deleted: false });
+    // if (!room) {
+    //   res.reply('签到失败，弹幕房不存在！');
+    //   return
+    // }
+    // if (room.containers.indexOf(uid) == -1) {
+    //   res.reply(`签到失败，你不是该弹幕房成员！`);
+    //   return;
+    // }
+    // if (signin.containers.indexOf(uid) != -1) {
+    //   res.reply(`本次课[${signin.room.title}]你已经签过到啦！`);
+    //   return;
+    // }
+
     signin.containers.push(uid);
     await signin.save();
-    req.wxsession.roomid = signin.room.id;
-    res.reply(`本次签到[${signin.room.title}]成功啦！`);
+    req.wxsession.roomid = room.id;
+    res.reply(`本次签到[${room.title}]成功啦！`);
   })().catch((e) => console.error(e));
 }
 
