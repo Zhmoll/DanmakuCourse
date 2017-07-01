@@ -145,7 +145,7 @@ function danmaku_histroy(message, req, res) {
     // 确保登录 - end
 
     const danmakus = await Danmaku
-      .find({ student: student.id }, '-_id content createdAt room', { limit: 7 })
+      .find({ student: req.wxsession.userid }, '-_id content createdAt room', { limit: 1 })
       .sort('-createdAt')
       .populate({
         path: 'room',
