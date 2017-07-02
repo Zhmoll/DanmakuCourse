@@ -28,13 +28,16 @@ const mw = wechat(config)
           case 'signin_histroy':
             return signin_histroy(message, req, res);
           case 'tech':
-            return res.reply(`施工中……`);
+            return res.reply('技术实现：\n\n'
+            +'服务端：\n使用Node.js作为运行环境，使用WebSocket协议实时与客户端通信。\n\n'
+            +'客户端：\n使用C#开发，使用JSON作为通信协议的格式，使用WebSocket完成通信。');
           case 'helper':
-            return res.reply('学生：\n1、在微信公众号上绑定个人信息（“绑定+学号+密码”）；\n2、扫描课堂上教室给出的签到二维码；\n'
+            return res.reply('使用帮助：\n\n'
+              + '学生：\n1、在微信公众号上绑定个人信息（“绑定+学号+密码”）；\n2、扫描课堂上教室给出的签到二维码；\n'
               + '3、签到成功后发送弹幕即可让弹幕进入课堂。\n\n教师：\n1、打开客户端，登录账号，若没有账号请先注册；\n'
               + '2、选择弹幕房间建立连接，若没有事先创建好的弹幕房间，请先创建；\n3、建立连接后，选择签到功能，签到完成的同学即可发送弹幕进入课堂。');
           case 'aboutus':
-            return res.reply('杭州电子科技大学\n短学期作品 - 弹幕课堂\n作者：\n张效伟、郑鹏达、陈钧博');
+            return res.reply('杭州电子科技大学\n弹幕课堂\n作者：\n张效伟,郑鹏达,陈钧博');
         }
         break;
       }
@@ -52,9 +55,7 @@ const mw = wechat(config)
   })
   .middlewarify();
 
-router.use('/', (req, res, next) => {
-  next();
-}, mw);
+router.use('/', mw);
 
 // 绑定学生身份
 function bind_helper(message, req, res) {
