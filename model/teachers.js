@@ -6,6 +6,6 @@ const teacherSchema = new Schema({
   password: { type: String },
   secret: { type: String },
   rooms: [{ type: Schema.Types.ObjectId, ref: 'Room' }]
-});
+},{versionKey:false});
 
 module.exports = mongoose.model('Teacher', teacherSchema);

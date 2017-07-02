@@ -6,6 +6,6 @@ const roomSchema = new Schema({
   teacher: { type: Schema.Types.ObjectId, ref: 'Teacher' },
   containers: [{ type: String }],
   deleted: { type: Boolean, default: false }
-});
+},{versionKey:false});
 
 module.exports = mongoose.model('Room', roomSchema);

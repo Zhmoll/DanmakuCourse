@@ -7,6 +7,6 @@ const danmakuSchema = new Schema({
   room: { type: Schema.Types.ObjectId, index: true, ref: 'Room' },
   createdAt: { type: Date, default: Date.now },
   blocked: { type: Boolean, default: false }
-});
+},{versionKey:false});
 
 module.exports = mongoose.model('Danmaku', danmakuSchema);
