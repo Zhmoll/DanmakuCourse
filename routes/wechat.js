@@ -103,10 +103,10 @@ function danmaku_helper(message, req, res) {
     const roomid = req.wxsession.roomid;
 
     if (roomid && wsDanmaku[roomid]) {
-      if (wsDanmaku[roomid].containers && wsDanmaku[roomid].containers.indexOf(uid) == -1) {
-        res.reply('发送失败，请确认是否为该课堂成员！');
-        return;
-      }
+      // if (wsDanmaku[roomid].containers && wsDanmaku[roomid].containers.indexOf(uid) == -1) {
+      //   res.reply('发送失败，请确认是否为该课堂成员！');
+      //   return;
+      // }
       if (content.length > 50) {
         res.reply('发送失败，请缩短篇幅！');
         return;
