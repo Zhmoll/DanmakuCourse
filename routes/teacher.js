@@ -126,7 +126,7 @@ router.post('/rooms', checkLogin, (req, res, next) => {
     });
   if (!containers || !Array.isArray(containers))
     containers = [];
-  Room.create({ title, _.uniq(containers), teacher: teacherid }, (err, room) => {
+  Room.create({ title, containers: _.uniq(containers), teacher: teacherid }, (err, room) => {
     if (err) return next(err);
     teacher.rooms.push(room.id);
     teacher.save((err, teacher) => {
