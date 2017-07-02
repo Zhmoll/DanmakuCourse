@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const moment = require('moment');
 const xlsx = require('node-xlsx');
 const querystring = require('querystring');
+const _ = require('lodash');
 
 router.get('/', (req, res, next) => {
   res.send('hello!');
@@ -125,7 +126,7 @@ router.post('/rooms', checkLogin, (req, res, next) => {
     });
   if (!containers || !Array.isArray(containers))
     containers = [];
-  Room.create({ title, containers, teacher: teacherid }, (err, room) => {
+  Room.create({ title, _.uniq(containers), teacher: teacherid }, (err, room) => {
     if (err) return next(err);
     teacher.rooms.push(room.id);
     teacher.save((err, teacher) => {
@@ -151,7 +152,7 @@ router.put('/rooms', checkLogin, checkPossessRoom, (req, res, next) => {
     containers = [];
 
   room.title = title;
-  room.containers = containers;
+  room.containers = _.uniq(containers);
   room.markModified('containers');
   room.save((err, room) => {
     if (err) return next(err);
