@@ -114,12 +114,12 @@ function danmaku_helper(message, req, res) {
       wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '不错！', blocked } }), console.error);
       wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '这个很好懂啊', blocked } }), console.error);
       wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '张老师太棒了！', blocked } }), console.error);
-      settimeout(() => {
+      settimeout((wsDanmaku) => {
         wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '可以可以~', blocked } }), console.error);
         wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '那么和DFS算法比起来哪个更好呢？', blocked } }), console.error);
         wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '666666666666666666', blocked } }), console.error);
         wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '棒极了！', blocked } }), console.error);
-      }, 2000);
+      }, 2000,wsDanmaku);
       res.reply('发送成功！');
     }
     else {
