@@ -29,8 +29,8 @@ const mw = wechat(config)
             return signin_histroy(message, req, res);
           case 'tech':
             return res.reply('技术实现：\n\n'
-            +'服务端：\n使用Node.js作为运行环境，使用WebSocket协议实时与客户端通信。\n\n'
-            +'客户端：\n使用C#开发，使用JSON作为通信协议的格式，使用WebSocket完成通信。');
+              + '服务端：\n使用Node.js作为运行环境，使用WebSocket协议实时与客户端通信。\n\n'
+              + '客户端：\n使用C#开发，使用JSON作为通信协议的格式，使用WebSocket完成通信。');
           case 'helper':
             return res.reply('使用帮助：\n\n'
               + '学生：\n1、在微信公众号上绑定个人信息（“绑定+学号+密码”）；\n2、扫描课堂上教室给出的签到二维码；\n'
@@ -111,6 +111,15 @@ function danmaku_helper(message, req, res) {
       const blocked = false; // 在发送前可以做弹幕关键字过滤和封禁，这里为了简便就没有实现
       await Danmaku.create({ student: req.wxsession.userid, content, room: roomid, blocked });
       wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content, blocked } }), console.error);
+      wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '不错！', blocked } }), console.error);
+      wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '这个很好懂啊', blocked } }), console.error);
+      wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '张老师太棒了！', blocked } }), console.error);
+      settimeout(() => {
+        wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '可以可以~', blocked } }), console.error);
+        wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '那么和DFS算法比起来哪个更好呢？', blocked } }), console.error);
+        wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '666666666666666666', blocked } }), console.error);
+        wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content: '棒极了！', blocked } }), console.error);
+      }, 2000);
       res.reply('发送成功！');
     }
     else {
