@@ -10,10 +10,6 @@ const xlsx = require('node-xlsx');
 const querystring = require('querystring');
 const _ = require('lodash');
 
-router.get('/', (req, res, next) => {
-  res.send('hello!');
-});
-
 // 教师注册
 router.post('/reg', (req, res, next) => {
   const { sid, password } = req.body;
@@ -23,7 +19,7 @@ router.post('/reg', (req, res, next) => {
       return res.json({
         code: 4008,
         message: '相同工号用户已注册',
-        body: {}
+        body: {}  //为了客户端的统一解析而设定的空对象，下面不再解释
       });
     }
     Teacher.create({ sid, password: processedPassword }, (err, teacher) => {
@@ -182,7 +178,7 @@ router.delete('/rooms', checkLogin, checkPossessRoom, (req, res, next) => {
   });
 });
 
-// 获取所有签到信息
+// 获取所有签到信息，不返回，交给下一个中间件
 router.use('/rooms/signins', checkLogin, checkPossessRoom, (req, res, next) => {
   const roomid = req.query.roomid;
   const room = req.room;
@@ -216,6 +212,7 @@ router.use('/rooms/signins', checkLogin, checkPossessRoom, (req, res, next) => {
   });
 });
 
+// 拿到上面的信息后，以json格式返回
 router.get('/rooms/signins', (req, res, next) => {
   res.json({
     code: 2006,
@@ -224,6 +221,7 @@ router.get('/rooms/signins', (req, res, next) => {
   });
 });
 
+// 拿到上面的信息后，以excel表格文件返回
 router.get('/rooms/signins/download', (req, res, next) => {
   const table = req.table;
   const buffer = xlsx.build([{
@@ -236,6 +234,7 @@ router.get('/rooms/signins/download', (req, res, next) => {
   res.end(buffer);
 });
 
+// 获得弹幕历史，不返回交给下一个中间件
 router.use('/rooms/danmakus', checkLogin, checkPossessRoom, (req, res, next) => {
   const roomid = req.room.id;
   Danmaku.find({ room: roomid }, 'student content createdAt blocked')
@@ -247,6 +246,7 @@ router.use('/rooms/danmakus', checkLogin, checkPossessRoom, (req, res, next) => 
     });
 });
 
+// 在上一个中间件后拿到弹幕历史，以json返回
 router.get('/rooms/danmakus', (req, res, next) => {
   const danmakus = req.danmakus;
   res.json({
@@ -256,6 +256,7 @@ router.get('/rooms/danmakus', (req, res, next) => {
   });
 });
 
+// 在上一个中间件后拿到弹幕历史，以excel文件返回
 router.get('/rooms/danmakus/download', (req, res, next) => {
   const danmakus = req.danmakus;
   const table = [['弹幕id', '学号', '姓名', '创建时间', '内容', '过滤']];
@@ -279,6 +280,7 @@ router.get('/rooms/danmakus/download', (req, res, next) => {
   res.end(buffer);
 });
 
+// 检查登录状态
 function checkLogin(req, res, next) {
   const { teacherid, secret } = req.query;
   if (!teacherid || !secret) {
@@ -301,6 +303,7 @@ function checkLogin(req, res, next) {
   });
 }
 
+// 检查登录者与房间的关系
 function checkPossessRoom(req, res, next) {
   const { teacherid, roomid } = req.query;
   const teacher = req.teacher;
@@ -337,6 +340,7 @@ function genSecert(text) {
   return crypto.createHash('sha256').update(`${Date.now()}${text}zhmoll`).digest('hex');
 }
 
+// 可以在这里进行第二次对密码的取摘要、加密处理，这里为了简单就直接返回原密码摘要
 function processPassword(password) {
   return password;
 }

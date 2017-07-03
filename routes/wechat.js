@@ -83,6 +83,7 @@ function bind_helper(message, req, res) {
 // 发送弹幕
 function danmaku_helper(message, req, res) {
   (async () => {
+    // 以下确保登陆代码被重复了多次，可以考虑抽象成一个类似中间件的函数去处理。这里从简处理故未实现。
     // 确保登录 - start
     let student;
     if (!req.wxsession.uid) {
@@ -103,15 +104,11 @@ function danmaku_helper(message, req, res) {
     const roomid = req.wxsession.roomid;
 
     if (roomid && wsDanmaku[roomid]) {
-      // if (wsDanmaku[roomid].containers && wsDanmaku[roomid].containers.indexOf(uid) == -1) {
-      //   res.reply('发送失败，请确认是否为该课堂成员！');
-      //   return;
-      // }
-      if (content.length > 50) {
+      if (content.length > 50) { // 所有常数参数可以移植到config文件中
         res.reply('发送失败，请缩短篇幅！');
         return;
       }
-      const blocked = false;
+      const blocked = false; // 在发送前可以做弹幕关键字过滤和封禁，这里为了简便就没有实现
       await Danmaku.create({ student: req.wxsession.userid, content, room: roomid, blocked });
       wsDanmaku[roomid].ws.send(JSON.stringify({ type: 'danmaku', body: { uid, name, content, blocked } }), console.error);
       res.reply('发送成功！');
@@ -125,6 +122,7 @@ function danmaku_helper(message, req, res) {
 
 // 订阅公众号
 function subscribe_helper(message, req, res) {
+  // 订阅公众号后返回的信息可以考虑更高大上一些
   (async () => {
     const openid = message.FromUserName;
     const user = await Student.findOne({ openid });
@@ -160,7 +158,7 @@ function danmaku_histroy(message, req, res) {
       .find({ student: req.wxsession.userid }, '-_id content createdAt room', { limit: 7 })
       .sort('-createdAt')
       .populate({ path: 'room', select: 'title' });
-    const result = [{ title: '弹幕课堂 - 最近七条用户弹幕记录' }];
+    const result = [{ title: '弹幕课堂 - 最近用户弹幕记录' }];
     danmakus.forEach((danmaku) => {
       result.push({
         title: `内容：${danmaku.content}\n课堂：${danmaku.room.title}\n时间：${moment(danmaku.createdAt).utcOffset(8).format('YYYY-MM-DD HH:mm:ss')}`
@@ -190,7 +188,7 @@ function signin_histroy(message, req, res) {
       .sort('-createdAt')
       .populate({ path: 'room', select: 'title' });
 
-    const result = [{ title: '弹幕课堂 - 最近七条用户签到记录' }];
+    const result = [{ title: '弹幕课堂 - 最近用户签到记录' }];
     signins.forEach((signin) => {
       result.push({
         title: `课堂：${signin.room.title}\n时间：${moment(signin.createdAt).utcOffset(8).format('YYYY-MM-DD HH:mm:ss')}`
@@ -239,25 +237,6 @@ function signin_helper(message, req, res) {
       res.reply(`签到失败，你不是该弹幕房成员！`);
       return;
     }
-
-    // const signin = await Signin.findOne({ key }).populate('room');
-    // if (!signin) {
-    //   res.reply('签到失败，二维码不正确或已过期，请重试！');
-    //   return;
-    // }
-    // const room = await Room.findOne({ _id: signin.room.id, deleted: false });
-    // if (!room) {
-    //   res.reply('签到失败，弹幕房不存在！');
-    //   return
-    // }
-    // if (room.containers.indexOf(uid) == -1) {
-    //   res.reply(`签到失败，你不是该弹幕房成员！`);
-    //   return;
-    // }
-    // if (signin.containers.indexOf(uid) != -1) {
-    //   res.reply(`本次课[${signin.room.title}]你已经签过到啦！`);
-    //   return;
-    // }
 
     signin.containers.push(uid);
     await signin.save();
